@@ -1,0 +1,57 @@
+courses
+    id
+    image_name
+    title
+    lessons_num
+    members
+    duration
+    teacher_name
+    teacher_profile
+    rating
+    price
+    discount
+
+course detail 
+    id
+    image_name
+    title
+    description
+    lessons_num
+    members
+    level
+    duration
+    teacher_name
+    teacher_profile
+    rating
+    prerequisites
+    language
+    price
+    discount
+
+enrollments
+    id
+    user_id (FK => users.id)
+    course_id (FK => course.id)
+    purchased_at
+
+reviews
+    id
+    user_id (FK => users.id)
+    course_id (FK => course.id)
+    rating
+    comment
+
+descriptions
+    id
+    course_id
+    description
+
+lessons
+    id
+    course_id (FK => course.id)
+    lessons
+    lesson_child
+
+lessons_child
+    id
+    lesson_id (FK => lessons.id)
