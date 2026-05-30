@@ -77,7 +77,7 @@ const signin = async (req, res) => {
         const token = generateToken({ email: user.email });
 
         // Set cookie and send response
-        this.setAuthCookie(res, token);
+        setAuthCookie(res, token);
         return res.status(200).json({
             message: 'User logged in successfully',
             token,
