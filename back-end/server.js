@@ -11,5 +11,3 @@ app.use(bodyParser.json())
 
 app.use('/api/auth', authRoutes);
 app.use('/api/courses', coursesRouter)
-
-app.listen(3001)

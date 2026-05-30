@@ -18,7 +18,7 @@ class Users {
 
     //   پیدا کردن کاربر برای ورود (با ایمیل یا یوزرنیم)
     static async findUserForLogin(identifier) {
-        const [rows] = await TestDB.execute(
+        const [rows] = await NoandishDB.execute(
             'SELECT id, email, username, password FROM users WHERE email = ? OR username = ?',
             [identifier, identifier]
         );
@@ -38,7 +38,7 @@ class Users {
 
     //  دریافت اطلاعات کاربر
     static async getUserById(userId) {
-        const [rows] = await TestDB.execute(
+        const [rows] = await NoandishDB.execute(
             'SELECT id, firstname, lastname, email, username, created_at FROM users WHERE id = ?',
             [userId]
         );
