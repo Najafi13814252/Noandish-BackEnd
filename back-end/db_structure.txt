@@ -1,57 +1,42 @@
 courses
     id
-    image_name
+    image_url
     title
-    lessons_num
+    lessons
     members
     duration
-    teacher_name
-    teacher_profile
-    rating
+    teacher_id (FK => teachers.id)
+    points
     price
     discount
-
-course detail 
-    id
-    image_name
-    title
-    description
-    lessons_num
-    members
     level
-    duration
-    teacher_name
-    teacher_profile
-    rating
-    prerequisites
+    prerequisite
     language
-    price
-    discount
+    created_at
 
-enrollments
+teachers
     id
-    user_id (FK => users.id)
+    fullname    
+    avatar
+    bio
+    created_at
+
+course chapters   
+    id
     course_id (FK => course.id)
-    purchased_at
-
-reviews
-    id
-    user_id (FK => users.id)
-    course_id (FK => course.id)
-    rating
-    comment
-
-descriptions
-    id
-    course_id
-    description
+    title
 
 lessons
     id
-    course_id (FK => course.id)
-    lessons
-    lesson_child
+    chapter_id (FK => chapters.id)
+    duration
+    video_url
+    is_free
 
-lessons_child
+comments
     id
-    lesson_id (FK => lessons.id)
+    course_id (FK => courses.id)
+    user_id (FK => users.id)
+    comment
+    rating
+    created_at

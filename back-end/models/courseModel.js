@@ -2,14 +2,15 @@ const NoandishDB = require('../configs/noandishDB')
 
 class Courses {
     static async getAll() {
-
-        const [db] = await NoandishDB.query('SELECT DATABASE() as db')
-        console.log('DATABASE =>', db)
-
-        const [tables] = await NoandishDB.query('SHOW TABLES')
-        console.log('TABLES =>', tables)
-
-        const [rows] = await NoandishDB.query('SELECT * FROM courses')
+        const [rows] = await NoandishDB.query(`
+            SELECT
+                c.*,
+                t.fullname AS teacher_name,
+                t.avatar AS teacher_avatar
+            FROM courses c
+            JOIN teachers t
+                ON c.teacher_id = t.id
+        `)
         return rows
     }
 }
