@@ -3,7 +3,7 @@ const Courses = require('../models/courseModel')
 const getCourses = async (_, res) => {
     try {
         const courses = await Courses.getAll()
-        res.status(200).json({courses})
+        res.status(200).json(courses)
         console.log(courses);
         
     } catch (error) {
