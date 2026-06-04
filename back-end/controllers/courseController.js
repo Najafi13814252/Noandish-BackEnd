@@ -1,8 +1,9 @@
 const Courses = require('../models/courseModel')
 
-const getCourses = async (_, res) => {
+const getCourses = async (req, res) => {
     try {
-        const courses = await Courses.getAll()
+        const { sort, points, level, type } = req.query
+        const courses = await Courses.getAll(sort, points, level, type)
         res.status(200).json(courses)
 
     } catch (error) {

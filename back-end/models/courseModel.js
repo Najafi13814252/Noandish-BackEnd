@@ -1,8 +1,56 @@
 const NoandishDB = require('../configs/noandishDB')
 
 class Courses {
-    static async getAll() {
-        const [rows] = await NoandishDB.query(`
+    static async getAll(sort = 'default', points, level, type) {
+
+        let orderBy = ''
+        // شرط‌ها را نگه میدارد
+        let whereConditions = []
+        let values = []
+
+        if (points !== undefined) {
+            whereConditions.push('courses.points >= ?')
+            values.push(Number(points))
+        }
+
+        if (level) {
+            whereConditions.push('courses.level = ?')
+            values.push(level)
+        }
+
+        if (type === 'free') {
+            whereConditions.push('courses.discount = 100')
+        }
+        if (type === 'paid') {
+            whereConditions.push('courses.discount < 100')
+        }
+
+        let whereClause = ''
+        if (whereConditions.length > 0) {
+            whereClause =
+                'WHERE ' +
+                whereConditions.join(' AND ')
+        }
+
+
+        switch (sort) {
+            case 'newest':
+                orderBy = 'ORDER BY courses.created_at DESC'
+                break
+
+            case 'discount':
+                orderBy = 'ORDER BY courses.discount DESC'
+                break
+
+            case 'popular':
+                orderBy = 'ORDER BY courses.members DESC'
+                break
+
+            default:
+                orderBy = ''
+        }
+
+        const [rows] = await NoandishDB.execute(`
             SELECT
             courses.*,
             teachers.fullname AS teacher_name,
@@ -19,8 +67,12 @@ class Courses {
             LEFT JOIN courses prerequisite
             ON cp.prerequisite_id = prerequisite.id
 
+            ${whereClause}
+
             GROUP BY courses.id
-        `)
+
+            ${orderBy}
+        `, values)
         return rows
     }
 
