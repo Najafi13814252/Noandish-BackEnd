@@ -1,7 +1,7 @@
 const NoandishDB = require('../configs/noandishDB')
 
 class Courses {
-    static async getAll(sort = 'default', points, level, type) {
+    static async getAll(sort = 'default', points, level, type, categorySlug) {
 
         let orderBy = ''
         // شرط‌ها را نگه میدارد
@@ -23,6 +23,11 @@ class Courses {
         }
         if (type === 'paid') {
             whereConditions.push('courses.discount < 100')
+        }
+
+        if (categorySlug) {
+            whereConditions.push('categories.slug = ?')
+            values.push(categorySlug)
         }
 
         let whereClause = ''
@@ -53,10 +58,16 @@ class Courses {
         const [rows] = await NoandishDB.execute(`
             SELECT
             courses.*,
+            categories.title AS category_name,
+            categories.slug AS category_slug,
             teachers.fullname AS teacher_name,
             teachers.avatar AS teacher_avatar,
             JSON_ARRAYAGG(prerequisite.title) AS prerequisites
+
             FROM courses
+
+            LEFT JOIN categories
+            ON courses.category_id = categories.id
 
             LEFT JOIN teachers
             ON courses.teacher_id = teachers.id
@@ -73,6 +84,7 @@ class Courses {
 
             ${orderBy}
         `, values)
+
         return rows
     }
 

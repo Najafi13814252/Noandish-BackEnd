@@ -10,13 +10,20 @@ courses
     price
     discount
     level
+    category_id
     prerequisite
     language
     created_at
 
 course_prerequisites
     course_id (FK => courses.id) 
-    prerequisite_id (FK => courses.id)             
+    prerequisite_id (FK => courses.id)   
+
+categories 
+    id 
+    title 
+    slug
+    created_at          
 
 teachers
     id
