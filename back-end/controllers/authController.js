@@ -23,9 +23,6 @@ const signup = async (req, res) => {
         // Hash password
         const hashedPassword = await hashePassword(password);
 
-        // Generate token
-        const token = generateToken({ email });
-
         // Create user
         const userData = {
             firstname: firstname.trim(),
@@ -36,6 +33,9 @@ const signup = async (req, res) => {
             createdAt
         };
         const result = await User.createUser(userData);
+
+        // Generate token
+        const token = generateToken({ id: result.insertId, email });
 
         // Set cookie and send response
         setAuthCookie(res, token);
@@ -74,10 +74,11 @@ const signin = async (req, res) => {
         }
 
         // Create token
-        const token = generateToken({ email: user.email });
+        const token = generateToken({ id: user.id, email: user.email });
 
         // Set cookie and send response
         setAuthCookie(res, token);
+
         return res.status(200).json({
             message: 'User logged in successfully',
             token,
@@ -117,9 +118,30 @@ const logout = async (_, res) => {
 const setAuthCookie = (res, token) => {
     res.setHeader('Set-Cookie', serialize('token', token, {
         httpOnly: true,
+        secure: true,
+        sameSite: 'none',
         path: '/',
         maxAge: 60 * 60 * 24, // 1 day
     }));
 }
 
-module.exports = { signup, signin, logout }
+// me
+const getMe = async (req, res) => {
+    try {
+        const userId = req.user.id;
+
+        const user = await User.getUserById(userId);
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        return res.status(200).json({ user });
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Internal Server Error' });
+    }
+}
+
+module.exports = { signup, signin, logout, getMe }

@@ -7,8 +7,8 @@ const hashePassword = async (password) => {
     return hashedPassword
 }
 
-const generateToken = (data) => {
-    const token = jwt.sign({ ...data }, process.env.PRIVATE_KEY, {
+const generateToken = (payload) => {
+    const token = jwt.sign(payload, process.env.PRIVATE_KEY, {
         // algorithm: ''
         expiresIn: "24h",
     })

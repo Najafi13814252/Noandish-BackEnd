@@ -3,15 +3,25 @@ const cors = require('cors')
 const bodyParser = require('body-parser')
 const coursesRouter = require('./routes/coursesRoutes')
 const authRoutes = require('./routes/authRoutes');
+const favoritesRoutes = require('./routes/favoritesRoutes');
 require('dotenv').config()
 
 const app = express()
 
-app.use(cors())
+const allowedOrigins = [
+    'http://localhost:3000',
+    'https://noandish.runflare.run'
+]
+app.use(cors({
+    origin: allowedOrigins,
+    credentials: true
+}))
+
 app.use(bodyParser.json())
 
 app.use('/api/auth', authRoutes);
 app.use('/api/courses', coursesRouter)
+app.use('/api/favorites', favoritesRoutes)
 
 const PORT = process.env.PORT || 3001
 
