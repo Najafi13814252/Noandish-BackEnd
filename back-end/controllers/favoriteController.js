@@ -1,100 +1,105 @@
 const Favorites = require('../models/favoriteModel')
 
-// Add favorite
+// افزودن به علاقه‌مندی‌ها
 const addFavorite = async (req, res) => {
     try {
         const userId = req.user.id
-        const { courseId } = req.body
+        const { course_id } = req.body
 
-        await Favorites.addFavorite(userId, courseId)
+        if (!course_id) {
+            return res.status(422).json({ message: 'course_id is required!' })
+        }
+
+        // بررسی تکراری نبودن
+        const alreadyFavorited = await Favorites.isFavorite(userId, course_id)
+        if (alreadyFavorited) {
+            return res.status(409).json({ message: 'This course is already in your favorites!' })
+        }
+
+        const result = await Favorites.addFavorite(userId, course_id)
 
         res.status(201).json({
-            success: true,
-            message: 'Course added to favorites'
+            message: 'Course added to favorites successfully',
+            favorite_id: result.insertId
         })
 
     } catch (error) {
-
-        // duplicate favorite (UNIQUE constraint)
-        if (error.code === 'ER_DUP_ENTRY') {
-            return res.status(409).json({
-                success: false,
-                message: 'Course already in favorites'
-            })
-        }
-
-        res.status(500).json({
-            success: false,
-            message: error.message
-        })
+        console.error(error)
+        res.status(500).json({ message: 'Internal Server Error' })
     }
 }
 
-// Remove favorite
+// حذف از علاقه‌مندی‌ها
 const removeFavorite = async (req, res) => {
     try {
         const userId = req.user.id
         const { courseId } = req.params
 
-        await Favorites.removeFavorite(userId, courseId)
+        const result = await Favorites.removeFavorite(userId, courseId)
 
-        res.status(200).json({
-            success: true,
-            message: 'Course removed from favorites'
-        })
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: 'Favorite not found!' })
+        }
+
+        res.status(200).json({ message: 'Course removed from favorites successfully' })
 
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: error.message
-        })
+        console.error(error)
+        res.status(500).json({ message: 'Internal Server Error' })
     }
 }
 
-// Get favorites
-const getFavorites = async (req, res) => {
+// گرفتن لیست علاقه‌مندی‌های کاربر
+const getUserFavorites = async (req, res) => {
     try {
         const userId = req.user.id
+        const favorites = await Favorites.getAllFavoriteByUser(userId)
 
-        const favorites = await Favorites.getFavorites(userId)
-
-        res.status(200).json({
-            success: true,
-            data: favorites
-        })
+        res.status(200).json(favorites)
 
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: error.message
-        })
+        console.error(error)
+        res.status(500).json({ message: 'Internal Server Error' })
     }
 }
 
-// Check favorite
-const isFavorite = async (req, res) => {
+// حذف یا اضافه علاقه‌مندی
+const toggleFavorite = async (req, res) => {
     try {
         const userId = req.user.id
-        const { courseId } = req.params
+        const { course_id } = req.body
 
-        const result = await Favorites.isFavorite(userId, courseId)
+        if (!course_id) {
+            return res.status(422).json({
+                message: 'course_id is required'
+            })
+        }
 
-        res.status(200).json({
-            success: true,
-            isFavorite: result
+        const favorite = await Favorites.isFavorite(userId, course_id)
+
+        // اگر قبلا favorite شده بود حذف کن
+        if (favorite) {
+            await Favorites.removeFavorite(userId, course_id)
+            return res.status(200).json({
+                isFavorite: false,
+                message: 'Course removed from favorites'
+            })
+        }
+
+        // اگر favorite نبود اضافه کن
+        await Favorites.addFavorite(userId, course_id)
+        return res.status(201).json({
+            isFavorite: true,
+            message: 'Course added to favorites'
         })
 
     } catch (error) {
+        console.error(error)
+
         res.status(500).json({
-            success: false,
-            message: error.message
+            message: 'Internal Server Error'
         })
     }
 }
 
-module.exports = {
-    addFavorite,
-    removeFavorite,
-    getFavorites,
-    isFavorite
-}
+module.exports = { addFavorite, removeFavorite, getUserFavorites, toggleFavorite }

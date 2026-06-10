@@ -4,6 +4,7 @@ const bodyParser = require('body-parser')
 const coursesRouter = require('./routes/coursesRoutes')
 const authRoutes = require('./routes/authRoutes');
 const favoritesRoutes = require('./routes/favoritesRoutes');
+const cartRoutes = require('./routes/cartRoutes');
 require('dotenv').config()
 
 const app = express()
@@ -22,6 +23,7 @@ app.use(bodyParser.json())
 app.use('/api/auth', authRoutes);
 app.use('/api/courses', coursesRouter)
 app.use('/api/favorites', favoritesRoutes)
+app.use('/api/cart', cartRoutes)
 
 const PORT = process.env.PORT || 3001
 

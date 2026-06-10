@@ -94,21 +94,30 @@ class Courses {
             courses.*,
             teachers.fullname AS teacher_name,
             teachers.avatar AS teacher_avatar,
-            JSON_ARRAYAGG(prerequisite.title) AS prerequisites
-            FROM courses
+            COALESCE(
+                JSON_ARRAYAGG(
+                    CASE
+                        WHEN prerequisite.id IS NOT NULL
+                        THEN prerequisite.title
+                    END
+                ),
+                JSON_ARRAY()
+            ) AS prerequisites
 
-            LEFT JOIN teachers
-            ON courses.teacher_id = teachers.id
+        FROM courses
 
-            LEFT JOIN course_prerequisites cp
-            ON courses.id = cp.course_id
+        LEFT JOIN teachers
+        ON courses.teacher_id = teachers.id
 
-            LEFT JOIN courses prerequisite
-            ON cp.prerequisite_id = prerequisite.id
+        LEFT JOIN course_prerequisites cp
+        ON courses.id = cp.course_id
 
-            WHERE courses.id = ?
+        LEFT JOIN courses prerequisite
+        ON cp.prerequisite_id = prerequisite.id
 
-            GROUP BY courses.id`,
+        WHERE courses.id = ?
+
+        GROUP BY courses.id`,
             [courseId]
         );
         return rows[0];

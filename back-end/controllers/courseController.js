@@ -1,10 +1,12 @@
 const Courses = require('../models/courseModel')
+const Favorites = require('../models/favoriteModel')
 
 const getCourses = async (req, res) => {
     try {
         const { slug } = req.params
         const { sort, points, level, type } = req.query
         const courses = await Courses.getAll(sort, points, level, type, slug)
+        
         res.status(200).json(courses)
 
     } catch (error) {
@@ -42,4 +44,4 @@ const getTeacherById = async (req, res) => {
     }
 }
 
-module.exports = { getCourses, getCourseById, getCourseContents, getTeacherById}
+module.exports = { getCourses, getCourseById, getCourseContents, getTeacherById }

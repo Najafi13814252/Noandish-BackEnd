@@ -52,3 +52,19 @@ comments
     comment
     rating
     created_at
+
+favorites 
+    id
+    user_id (FK => users.id) 
+    course_id (FK => courses.id)
+    created_at
+
+carts
+    id
+    user_id (FK => users.id)
+    created_at
+
+cart_items 
+    id
+    cart_id (FK => carts.id)
+    course_id (FK => courses.id)
