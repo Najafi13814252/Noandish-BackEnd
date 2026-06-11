@@ -4,15 +4,10 @@ const { serialize } = require('cookie');
 
 
 // ثبت نام
-const signup = async (req, res) => {
+const signup = async (req, res, next) => {
     try {
         let { firstname, lastname, email, username, password } = req.body;
         const createdAt = new Date();
-
-        // Validation
-        if (!firstname?.trim() || !lastname?.trim() || !email?.trim() || !username?.trim() || !password?.trim()) {
-            return res.status(422).json({ message: 'All fields are required!' });
-        }
 
         // بررسی وجود کابر
         const existingUser = await User.findUserByEmailOrUsername(email, username);
@@ -35,53 +30,45 @@ const signup = async (req, res) => {
         const result = await User.createUser(userData);
 
         // Generate token
-        const token = generateToken({ id: result.insertId, email });
+        const token = generateToken({ id: result.insertId });
 
         // Set cookie and send response
         setAuthCookie(res, token);
         return res.status(201).json({
             message: 'User registered successfully',
-            user_id: result.insertId,
-            token
+            user_id: result.insertId
         });
 
     } catch (error) {
-        console.error(error);
-        return res.status(500).json({ message: 'Unknown Internal Server Error!' });
+        next(error)
     }
 }
 
 // ورود
-const signin = async (req, res) => {
+const signin = async (req, res, next) => {
     try {
         const { identifier, password } = req.body;
-
-        // Validation
-        if (!identifier?.trim() || !password?.trim()) {
-            return res.status(422).json({ message: 'All fields are required!' });
-        }
 
         // بررسی وجود کاربر
         const user = await User.findUserForLogin(identifier);
         if (!user) {
-            return res.status(404).json({ message: "User not found!" });
+            return res.status(401).json({ message: "Invalid credentials!" });
         }
 
         // Verify password
         const isValidPassword = await verifyPassword(password, user.password);
         if (!isValidPassword) {
-            return res.status(401).json({ message: 'Username or password is not correct!' });
+            return res.status(401).json({ message: 'Invalid credentials!' });
         }
 
         // Create token
-        const token = generateToken({ id: user.id, email: user.email });
+        const token = generateToken({ id: user.id });
 
         // Set cookie and send response
         setAuthCookie(res, token);
 
         return res.status(200).json({
             message: 'User logged in successfully',
-            token,
             user: {
                 id: user.id,
                 email: user.email,
@@ -90,13 +77,12 @@ const signin = async (req, res) => {
         });
 
     } catch (error) {
-        console.error(error);
-        return res.status(500).json({ message: 'Unknown Internal Server Error!' });
+        next(error)
     }
 }
 
 // خروج
-const logout = async (_, res) => {
+const logout = async (_, res, next) => {
     try {
         // Clear the cookie by setting maxAge to 0
         res.setHeader('Set-Cookie', serialize('token', "", {
@@ -109,8 +95,7 @@ const logout = async (_, res) => {
             message: 'User logged out successfully!'
         });
     } catch (error) {
-        console.error(error);
-        return res.status(500).json({ message: 'Unknown Internal Server Error!' });
+        next(error)
     }
 }
 
@@ -126,7 +111,7 @@ const setAuthCookie = (res, token) => {
 }
 
 // me
-const getMe = async (req, res) => {
+const getMe = async (req, res, next) => {
     try {
         const userId = req.user.id;
 
@@ -139,8 +124,7 @@ const getMe = async (req, res) => {
         return res.status(200).json({ user });
 
     } catch (error) {
-        console.error(error);
-        return res.status(500).json({ message: 'Internal Server Error' });
+        next(error)
     }
 }
 

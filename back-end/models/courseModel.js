@@ -1,43 +1,13 @@
 const NoandishDB = require('../configs/noandishDB')
+const buildCourseFilters = require('../utils/buildWhere')
+const groupCourseContent = require('../utils/groupCourseContent')
 
 class Courses {
     static async getAll(sort = 'default', points, level, type, categorySlug) {
 
+        const { whereClause, values } = buildCourseFilters(points, level, type, categorySlug)
+
         let orderBy = ''
-        // شرط‌ها را نگه میدارد
-        let whereConditions = []
-        let values = []
-
-        if (points !== undefined) {
-            whereConditions.push('courses.points >= ?')
-            values.push(Number(points))
-        }
-
-        if (level) {
-            whereConditions.push('courses.level = ?')
-            values.push(level)
-        }
-
-        if (type === 'free') {
-            whereConditions.push('courses.discount = 100')
-        }
-        if (type === 'paid') {
-            whereConditions.push('courses.discount < 100')
-        }
-
-        if (categorySlug) {
-            whereConditions.push('categories.slug = ?')
-            values.push(categorySlug)
-        }
-
-        let whereClause = ''
-        if (whereConditions.length > 0) {
-            whereClause =
-                'WHERE ' +
-                whereConditions.join(' AND ')
-        }
-
-
         switch (sort) {
             case 'newest':
                 orderBy = 'ORDER BY courses.created_at DESC'
@@ -58,10 +28,10 @@ class Courses {
         const [rows] = await NoandishDB.execute(`
             SELECT
             courses.*,
-            categories.title AS category_name,
-            categories.slug AS category_slug,
             teachers.fullname AS teacher_name,
             teachers.avatar AS teacher_avatar,
+            categories.title AS category_name,
+            categories.slug AS category_slug,
             JSON_ARRAYAGG(prerequisite.title) AS prerequisites
 
             FROM courses
@@ -90,7 +60,8 @@ class Courses {
 
     static async getCourseById(courseId) {
         const [rows] = await NoandishDB.execute(
-            `SELECT
+            `
+            SELECT
             courses.*,
             teachers.fullname AS teacher_name,
             teachers.avatar AS teacher_avatar,
@@ -104,49 +75,50 @@ class Courses {
                 JSON_ARRAY()
             ) AS prerequisites
 
-        FROM courses
+            FROM courses
 
-        LEFT JOIN teachers
-        ON courses.teacher_id = teachers.id
+            LEFT JOIN teachers
+            ON courses.teacher_id = teachers.id
 
-        LEFT JOIN course_prerequisites cp
-        ON courses.id = cp.course_id
+            LEFT JOIN course_prerequisites cp
+            ON courses.id = cp.course_id
 
-        LEFT JOIN courses prerequisite
-        ON cp.prerequisite_id = prerequisite.id
+            LEFT JOIN courses prerequisite
+            ON cp.prerequisite_id = prerequisite.id
 
-        WHERE courses.id = ?
+            WHERE courses.id = ?
 
-        GROUP BY courses.id`,
+            GROUP BY courses.id
+            `,
             [courseId]
         );
         return rows[0];
     }
 
     static async getCourseContents(courseId) {
-        const [chapters] = await NoandishDB.execute(
+        const [rows] = await NoandishDB.execute(
             `
-        SELECT *
-        FROM course_chapters
-        WHERE course_id = ?
-        `,
+            SELECT
+            cc.id AS chapter_id,
+            cc.title AS chapter_title,
+
+            l.id AS lesson_id,
+            l.title AS lesson_title,
+            l.video_url
+
+            FROM course_chapters cc
+
+            LEFT JOIN lessons l
+            ON cc.id = l.chapter_id
+
+            WHERE cc.course_id = ?
+
+            ORDER BY cc.id, l.id
+            `,
             [courseId]
         )
 
-        for (const chapter of chapters) {
-            const [lessons] = await NoandishDB.execute(
-                `
-            SELECT *
-            FROM lessons
-            WHERE chapter_id = ?
-            `,
-                [chapter.id]
-            )
-
-            chapter.lessons = lessons
-        }
-
-        return chapters
+        return groupCourseContent(rows)
     }
 
     static async getTeacherById(courseId) {

@@ -3,7 +3,7 @@ const NoandishDB = require('../configs/noandishDB')
 class Users {
     // گرفتن همه کاربران
     static async getAll() {
-        const [rows] = await NoandishDB.query(`SELECT * FROM users`)
+        const [rows] = await NoandishDB.query(`SELECT id, firstname, lastname, email, username FROM users`)
         return rows
     }
 
@@ -19,7 +19,7 @@ class Users {
     //   پیدا کردن کاربر برای ورود (با ایمیل یا یوزرنیم)
     static async findUserForLogin(identifier) {
         const [rows] = await NoandishDB.execute(
-            'SELECT id, email, username, password FROM users WHERE email = ? OR username = ?',
+            'SELECT id, email, username, password FROM users WHERE email = ? OR username = ? LIMIT 1',
             [identifier, identifier]
         );
         return rows[0]; // برگرداندن اولین کاربر یا undefined

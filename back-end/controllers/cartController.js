@@ -1,6 +1,6 @@
 const Cart = require('../models/cartModel')
 
-const addCart = async (req, res) => {
+const addCart = async (req, res, next) => {
     try {
 
         const userId = req.user.id
@@ -36,15 +36,12 @@ const addCart = async (req, res) => {
         })
 
     } catch (error) {
-
-        return res.status(500).json({
-            message: error.message
-        })
+        next(error)
     }
 
 }
 
-const getCart = async (req, res) => {
+const getCart = async (req, res, next) => {
     try {
 
         const userId = req.user.id
@@ -59,13 +56,11 @@ const getCart = async (req, res) => {
         })
 
     } catch (error) {
-        return res.status(500).json({
-            message: error.message
-        })
+        next(error)
     }
 }
 
-const remove = async (req, res) => {
+const remove = async (req, res, next) => {
     try {
         const { id } = req.params
 
@@ -76,10 +71,7 @@ const remove = async (req, res) => {
         })
 
     } catch (error) {
-
-        return res.status(500).json({
-            message: error.message
-        })
+        next(error)
     }
 }
 

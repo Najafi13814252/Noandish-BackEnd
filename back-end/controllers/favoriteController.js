@@ -1,7 +1,7 @@
 const Favorites = require('../models/favoriteModel')
 
 // افزودن به علاقه‌مندی‌ها
-const addFavorite = async (req, res) => {
+const addFavorite = async (req, res, next) => {
     try {
         const userId = req.user.id
         const { course_id } = req.body
@@ -24,13 +24,12 @@ const addFavorite = async (req, res) => {
         })
 
     } catch (error) {
-        console.error(error)
-        res.status(500).json({ message: 'Internal Server Error' })
+        next(error)
     }
 }
 
 // حذف از علاقه‌مندی‌ها
-const removeFavorite = async (req, res) => {
+const removeFavorite = async (req, res, next) => {
     try {
         const userId = req.user.id
         const { courseId } = req.params
@@ -44,13 +43,12 @@ const removeFavorite = async (req, res) => {
         res.status(200).json({ message: 'Course removed from favorites successfully' })
 
     } catch (error) {
-        console.error(error)
-        res.status(500).json({ message: 'Internal Server Error' })
+        next(error)
     }
 }
 
 // گرفتن لیست علاقه‌مندی‌های کاربر
-const getUserFavorites = async (req, res) => {
+const getUserFavorites = async (req, res, next) => {
     try {
         const userId = req.user.id
         const favorites = await Favorites.getAllFavoriteByUser(userId)
@@ -58,13 +56,12 @@ const getUserFavorites = async (req, res) => {
         res.status(200).json(favorites)
 
     } catch (error) {
-        console.error(error)
-        res.status(500).json({ message: 'Internal Server Error' })
+        next(error)
     }
 }
 
 // حذف یا اضافه علاقه‌مندی
-const toggleFavorite = async (req, res) => {
+const toggleFavorite = async (req, res, next) => {
     try {
         const userId = req.user.id
         const { course_id } = req.body
@@ -94,11 +91,7 @@ const toggleFavorite = async (req, res) => {
         })
 
     } catch (error) {
-        console.error(error)
-
-        res.status(500).json({
-            message: 'Internal Server Error'
-        })
+        next(error)
     }
 }
 

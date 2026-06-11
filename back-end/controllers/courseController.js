@@ -1,46 +1,45 @@
 const Courses = require('../models/courseModel')
-const Favorites = require('../models/favoriteModel')
 
-const getCourses = async (req, res) => {
+const getCourses = async (req, res, next) => {
     try {
         const { slug } = req.params
         const { sort, points, level, type } = req.query
         const courses = await Courses.getAll(sort, points, level, type, slug)
-        
+
         res.status(200).json(courses)
 
     } catch (error) {
-        res.status(500).json({ message: error.message })
+        next(error)
     }
 }
 
-const getCourseById = async (req, res) => {
+const getCourseById = async (req, res, next) => {
     try {
         const { id } = req.params
         const course = await Courses.getCourseById(id)
         res.status(200).json(course)
     } catch (error) {
-        res.status(500).json({ message: error.message })
+        next(error)
     }
 }
 
-const getCourseContents = async (req, res) => {
+const getCourseContents = async (req, res, next) => {
     try {
         const { id } = req.params
         const content = await Courses.getCourseContents(id)
         res.status(200).json(content)
     } catch (error) {
-        res.status(500).json({ message: error.message })
+        next(error)
     }
 }
 
-const getTeacherById = async (req, res) => {
+const getTeacherById = async (req, res, next) => {
     try {
         const { id } = req.params
         const content = await Courses.getTeacherById(id)
         res.status(200).json(content)
     } catch (error) {
-        res.status(500).json({ message: error.message })
+        next(error)
     }
 }
 
